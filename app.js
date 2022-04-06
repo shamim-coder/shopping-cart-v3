@@ -1,5 +1,6 @@
 const form = document.getElementById("form");
 
+let countNumber = 0;
 form.addEventListener("submit", function (event) {
     event.preventDefault();
 
@@ -11,20 +12,17 @@ form.addEventListener("submit", function (event) {
     // const productUpload = document.getElementById("product-upload").files[0];
 
     const product = {};
-
+    countNumber++;
+    product.id = countNumber;
     product.name = productName.value;
     // product.image = productUpload.name;
     product.size = productSize.value;
     product.color = productColor.value;
     product.price = productPrice.value;
     product.brand = productBrand.value;
-
     addProduct(product);
 
-    const price = document.getElementById("single-price");
-    console.log(price);
-
-    selectQuantity(product);
+    selectQuantity(product.id, product.price);
 });
 
 function addProduct(product) {
@@ -41,7 +39,7 @@ function addProduct(product) {
                 </div>
             </div>
             <div class="col-1">
-                <select class="quantity form-select me-5" aria-label="Default select example">
+                <select id="quantity-${product.id}" class="form-select me-5" aria-label="Default select example">
                     <option selected value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -51,8 +49,8 @@ function addProduct(product) {
                 </select>
             </div>
             <div class="product-price me-auto col-3">
-                <h4>$<span id="total-price">1156</span></h4>
-                <p>$<span class="single-price">${product.price}</span> each</p>
+                <h4>$<span id="${"total-price" + product.id}">${product.price}</span></h4>
+                <p>$<span id="${"single-price" + product.id}">${product.price}</span> each</p>
             </div>
             <div class="product-remove col-2">
                 <button class="btn btn-outline-secondary">Remove</button>
@@ -61,19 +59,25 @@ function addProduct(product) {
     productContainer.appendChild(singleProduct);
 }
 
-function selectQuantity(product) {
-    const productQuantities = document.getElementsByClassName("quantity");
+function selectQuantity(id, price) {
+    const productQuantities = document.getElementById("quantity-" + id);
+    getTotal(price);
+    productQuantities.addEventListener("change", () => {
+        const productQuantity = parseInt(productQuantities.value);
+        const totalPriceDisplay = document.getElementById("total-price" + id);
+        const totalPrice = productQuantity * price;
+        totalPriceDisplay.innerText = totalPrice;
+        getTotal(totalPrice);
+    });
+}
 
-    for (const quantity of productQuantities) {
-        quantity.addEventListener("change", () => {
-            const productQuantity = parseInt(quantity.value);
-            const singlePrice = document.getElementsByClassName("single-price");
-
-            for (const price of singlePrice) {
-                const priceNumber = parseFloat(price.innerText) * productQuantity;
-                document.getElementById("total-price").innerText = priceNumber;
-                console.log(priceNumber);
-            }
-        });
-    }
+function getTotal(price) {
+    const subtotal = document.getElementById("subtotal");
+    const tax = document.getElementById("tax");
+    const total = document.getElementById("total");
+    subtotal.innerText = price;
+    const totalTax = price / 10;
+    tax.innerText = totalTax;
+    total.innerText = parseFloat(price) + totalTax;
+    console.log(price, totalTax);
 }
